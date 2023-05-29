@@ -1,6 +1,10 @@
 import java.util.Random;
 import java.util.Scanner;
 
+interface Attacker {
+    void attack(SpaceShip target);
+}
+
 abstract class SpaceShip {
     protected String name;
     protected int health;
@@ -23,7 +27,7 @@ abstract class SpaceShip {
     }
 }
 
-class Player extends SpaceShip {
+class Player extends SpaceShip implements Attacker {
     private int numHealthPacks;
 
     public Player(String name) {
@@ -38,12 +42,19 @@ class Player extends SpaceShip {
         System.out.println("Pakiety medyczne: " + numHealthPacks);
     }
 
+    @Override
+    public void attack(SpaceShip target) {
+        if (target.isAlive()) {
+            int damage = 10;
+            target.takeDamage(damage);
+            System.out.println(name + " zadał " + damage + " obrażeń " + target.name);
+        }
+    }
+
     public void attack(EnemyShip[] enemies) {
         for (EnemyShip enemy : enemies) {
             if (enemy.isAlive()) {
-                int damage = 10;
-                enemy.takeDamage(damage);
-                System.out.println(name + " zadał " + damage + " obrażeń " + enemy.name);
+                attack(enemy);
             }
         }
     }
@@ -53,19 +64,17 @@ class Player extends SpaceShip {
             int healingAmount = 30;
             health += healingAmount;
             numHealthPacks--;
-            System.out.println(name + " Naprawił się " + healingAmount + " punktów życia.");
+            System.out.println(name + " uleczył się o " + healingAmount + " punktów życia.");
         } else {
             System.out.println("Brak pakietów medycznych.");
         }
     }
 }
 
-abstract class EnemyShip extends SpaceShip {
+abstract class EnemyShip extends SpaceShip implements Attacker {
     public EnemyShip(String name, int health) {
         super(name, health);
     }
-
-    public abstract void attack(SpaceShip target);
 }
 
 class SmallEnemyShip extends EnemyShip {
@@ -79,8 +88,6 @@ class SmallEnemyShip extends EnemyShip {
             int damage = 5;
             target.takeDamage(damage);
             System.out.println(name + " zadał " + damage + " obrażeń " + target.name);
-        } else {
-            System.out.println(name + " nie może zaatakować zniszczonego celu!");
         }
     }
 }
@@ -96,8 +103,6 @@ class MediumEnemyShip extends EnemyShip {
             int damage = 10;
             target.takeDamage(damage);
             System.out.println(name + " zadał " + damage + " obrażeń " + target.name);
-        } else {
-            System.out.println(name + " nie może zaatakować zniszczonego celu!");
         }
     }
 }
@@ -113,8 +118,6 @@ class LargeEnemyShip extends EnemyShip {
             int damage = 15;
             target.takeDamage(damage);
             System.out.println(name + " zadał " + damage + " obrażeń " + target.name);
-        } else {
-            System.out.println(name + " nie może zaatakować zniszczonego celu!");
         }
     }
 }
@@ -142,7 +145,7 @@ public class SpaceGame {
         while (player.isAlive() && anyEnemiesAlive(enemies)) {
             System.out.println("\nWybierz akcję:");
             System.out.println("1. Atakuj");
-            System.out.println("2. Napraw się");
+            System.out.println("2. Ulecz się");
 
             int choice = scanner.nextInt();
 
